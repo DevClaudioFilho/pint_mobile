@@ -129,7 +129,7 @@ class _CursosPageState extends State<CursosPage> {
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: InkWell(
         onTap: () {
-          Navigator.pushNamed(context, '/cursos/id', arguments: curso);
+          Navigator.pushNamed(context, '/cursos/id', arguments: curso.id);
         },
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,

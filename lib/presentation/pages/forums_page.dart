@@ -33,7 +33,6 @@ class _ForumsPageState extends State<ForumsPage> {
       padding: const EdgeInsets.all(16),
       child: ListView(
         children: [
-          const Text('Search', style: TextStyle(fontWeight: FontWeight.bold)),
           const SizedBox(height: 4),
           TextField(
             onChanged: (value) {
