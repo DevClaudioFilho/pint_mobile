@@ -1,17 +1,26 @@
 import 'dart:async';
-import '../../../data/models/aula.dart';
+import 'package:sqflite/sqflite.dart';
+import '../db/database_helper.dart';
+import '../../data/models/aula.dart';
 
 class AulaService {
   Future<Aula> fetchAula(String id) async {
-    await Future.delayed(const Duration(milliseconds: 500)); // Simula API
-    return Aula(
-      id: id,
-      titulo: 'Introdução ao Python',
-      descricao: 'Descrição da aula $id',
-      professor: 'Claudio Filho',
-      videoUrl: 'https://www.youtube.com/watch?v=BBAyRBTfsOU',
-      thumbnail: 'https://img.youtube.com/vi/BBAyRBTfsOU/0.jpg',
-      avaliacao: 4.5,
-    );
+    await Future.delayed(const Duration(seconds: 1)); // Simula API
+    final db = await DatabaseHelper().db;
+    final result = await db.query('aulas', where: 'id = ?', whereArgs: [id], limit: 1);
+
+    return Aula.fromMap(result.first);
+  }
+
+  Future<List<Aula>> fetchAulasByCurso(String cursoId) async {
+    await Future.delayed(const Duration(seconds: 1)); // Simula API
+    final db = await DatabaseHelper().db;
+    final result = await db.query('aulas', where: 'cursoId = ?', whereArgs: [cursoId]);
+    return result.map((e) => Aula.fromMap(e)).toList();
+  }
+
+  Future<void> insertAula(Aula aula) async {
+    final db = await DatabaseHelper().db;
+    await db.insert('aulas', aula.toMap(), conflictAlgorithm: ConflictAlgorithm.replace);
   }
 }

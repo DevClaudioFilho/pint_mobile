@@ -38,11 +38,10 @@ class _SolicitarContaPageState extends State<SolicitarContaPage> {
       body: Stack(
         fit: StackFit.expand,
         children: [
-          Image.network(
-            'https://upload.wikimedia.org/wikipedia/commons/9/9a/Lisbon_Parque_das_Na%C3%A7%C3%B5es.jpg',
+          Image.asset(
+            'assets/bg_login.jpg',
             fit: BoxFit.cover,
           ),
-          Container(color: Colors.black.withOpacity(0.5)),
           Padding(
             padding: const EdgeInsets.all(24),
             child: Center(

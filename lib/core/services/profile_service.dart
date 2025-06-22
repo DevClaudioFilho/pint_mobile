@@ -1,33 +1,36 @@
-import 'dart:async';
-
-class UserProfile {
-  final String id;
-  final String nome;
-  final String email;
-  final String morada;
-  final String codigoPostal;
-  final String avatarUrl;
-
-  UserProfile({
-    required this.id,
-    required this.nome,
-    required this.email,
-    required this.morada,
-    required this.codigoPostal,
-    required this.avatarUrl,
-  });
-}
+import 'package:flutter_application/core/db/database_helper.dart';
+import 'package:flutter_application/data/models/profile.dart';
 
 class ProfileService {
-  Future<UserProfile> fetchProfile() async {
-    await Future.delayed(const Duration(milliseconds: 500));
-    return UserProfile(
-      id: '#3515280',
-      nome: 'Claudio Martins de Pinho filho',
-      email: 'claudiofilhodf@softinsa.com',
-      morada: 'Av.Sei la oque',
-      codigoPostal: '351-1234',
-      avatarUrl: 'https://images.pexels.com/photos/326875/pexels-photo-326875.jpeg?cs=srgb&dl=adorable-animal-blur-326875.jpg&fm=jpg',
+  Future<Profile?> fetchProfileById(String id) async {
+    await Future.delayed(const Duration(seconds: 1)); // Simula API
+    final db = await DatabaseHelper().db;
+    final result = await db.query(
+      'profiles',
+      where: 'id = ?',
+      whereArgs: [id],
+      limit: 1,
+    );
+    if (result.isNotEmpty) {
+      return Profile.fromMap(result.first);
+    }
+    return null;
+  }
+
+  Future<Profile> fetchProfile() async {
+    await Future.delayed(const Duration(seconds: 1)); // Simula API
+    final db = await DatabaseHelper().db;
+    final result = await db.query('profiles', limit: 1);
+    return Profile.fromMap(result.first);
+  }
+
+  Future<void> updateProfile(Profile profile) async {
+    final db = await DatabaseHelper().db;
+    await db.update(
+      'profiles',
+      profile.toMap(),
+      where: 'id = ?',
+      whereArgs: [profile.id],
     );
   }
 }

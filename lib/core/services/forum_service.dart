@@ -1,31 +1,57 @@
-import '../../data/models/post.dart';
-import '../../data/models/forum.dart';
+import 'dart:async';
+import 'package:flutter_application/core/db/database_helper.dart';
+import 'package:flutter_application/data/models/forum.dart';
+import 'package:flutter_application/data/models/post.dart';
+import 'package:sqflite/sqflite.dart';
 
 class ForumService {
-  /// Simula busca dos fóruns (categorias)
   Future<List<Forum>> fetchForums() async {
-    await Future.delayed(const Duration(seconds: 1));
-    return [
-      Forum(nome: 'PYTHON', imagem: 'assets/python.png'),
-      Forum(nome: 'C#', imagem: 'assets/csharp.png'),
-      Forum(nome: 'DEVOPS', imagem: 'assets/devops.png'),
-    ];
+    await Future.delayed(const Duration(seconds: 1)); // Simula delay de API
+    final db = await DatabaseHelper().db;
+    final result = await db.query('forums');
+    return result.map((e) => Forum.fromMap(e)).toList();
   }
 
-  /// Simula busca de posts de um fórum específico
+  Future<void> insertForum(Forum f) async {
+    final db = await DatabaseHelper().db;
+    await db.insert('forums', f.toMap(), conflictAlgorithm: ConflictAlgorithm.replace);
+  }
+
+  Future<Post> fetchPostById(String id) async {
+    await Future.delayed(const Duration(seconds: 1)); // Simula API
+    final db = await DatabaseHelper().db;
+    final result = await db.query('posts', where: 'id = ?', whereArgs: [id], limit: 1);
+   
+    return Post.fromMap(result.first);
+
+  }
+
+  Future<List<Post>> fetchPostsByForumName(String forumName) async {
+    await Future.delayed(const Duration(seconds: 1)); // Simula API
+    final db = await DatabaseHelper().db;
+    final result = await db.query('posts', where: 'forumName = ?', whereArgs: [forumName]);
+    return result.map((e) => Post.fromMap(e)).toList();
+  }
+
+  Future<void> insertPost(Post post) async {
+    final db = await DatabaseHelper().db;
+    await db.insert('posts', post.toMap(), conflictAlgorithm: ConflictAlgorithm.replace);
+  }
+
   Future<List<Post>> fetchPostsForForum(String forumName) async {
-    await Future.delayed(const Duration(seconds: 1));
-
-    final allPosts = _mockPosts();
-
-    // Simula filtro pelo nome do fórum
-    return allPosts.where((p) => p.forumName == forumName).toList();
+    await Future.delayed(const Duration(seconds: 1)); // Simula API
+    final db = await DatabaseHelper().db;
+    final result = await db.query(
+      'posts',
+      where: 'forumName = ?',
+      whereArgs: [forumName],
+    );
+    return result.map((e) => Post.fromMap(e)).toList();
   }
 
-  /// Simula criação de post
   Future<Post> createPost(String titulo, String descricao, String autor, String forumName) async {
-    await Future.delayed(const Duration(seconds: 1));
-    return Post(
+    final db = await DatabaseHelper().db;
+    final newPost = Post(
       id: DateTime.now().millisecondsSinceEpoch.toString(),
       titulo: titulo,
       descricao: descricao,
@@ -33,44 +59,8 @@ class ForumService {
       estrelas: 0,
       forumName: forumName,
     );
+    await db.insert('posts', newPost.toMap());
+    return newPost;
   }
 
-  Future<Post?> fetchPostById(String id) async {
-    await Future.delayed(const Duration(seconds: 1));
-    final posts = _mockPosts();
-    return posts.firstWhere(
-      (p) => p.id == id,
-    );
-  }
-
-
-  /// Mock de posts com associação ao fórum
-  List<Post> _mockPosts() {
-    return [
-      Post(
-        id: '1',
-        titulo: 'Problemas na atualizacao do python',
-        descricao: 'Descrição do post sobre python.',
-        autor: 'Jose Beselga',
-        estrelas: 3,
-        forumName: 'PYTHON',
-      ),
-      Post(
-        id: '2',
-        titulo: 'Como se faz um ciclo em C',
-        descricao: 'Descrição sobre ciclos em C.',
-        autor: 'Afonso Rodrigues',
-        estrelas: 2,
-        forumName: 'C#',
-      ),
-      Post(
-        id: '3',
-        titulo: 'Versao 24.04 do ubuntu erros',
-        descricao: 'Descrição sobre erros no Ubuntu.',
-        autor: 'Claudio Pinho',
-        estrelas: 4,
-        forumName: 'DEVOPS',
-      ),
-    ];
-  }
 }

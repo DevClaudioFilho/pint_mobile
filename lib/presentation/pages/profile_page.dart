@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_application/data/models/profile.dart';
 import '../../../core/services/profile_service.dart';
 
 class ProfilePage extends StatefulWidget {
@@ -10,7 +11,7 @@ class ProfilePage extends StatefulWidget {
 
 class _ProfilePageState extends State<ProfilePage> {
   final _service = ProfileService();
-  late Future<UserProfile> _profileFuture;
+  late Future<Profile> _profileFuture;
 
   @override
   void initState() {
@@ -18,7 +19,7 @@ class _ProfilePageState extends State<ProfilePage> {
     _profileFuture = _service.fetchProfile();
   }
 
-  void _showEditDialog(UserProfile profile) {
+  void _showEditDialog(Profile profile) {
     final nomeController = TextEditingController(text: profile.nome);
     final emailController = TextEditingController(text: profile.email);
     final moradaController = TextEditingController(text: profile.morada);
@@ -71,7 +72,7 @@ class _ProfilePageState extends State<ProfilePage> {
     );
   }
 
-  Widget _buildProfile(UserProfile profile) {
+  Widget _buildProfile(Profile profile) {
     return Padding(
       padding: const EdgeInsets.all(16),
       child: ListView(
@@ -133,7 +134,7 @@ class _ProfilePageState extends State<ProfilePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: FutureBuilder<UserProfile>(
+      body: FutureBuilder<Profile>(
         future: _profileFuture,
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {

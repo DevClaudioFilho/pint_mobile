@@ -3,7 +3,7 @@ class Post {
   final String titulo;
   final String descricao;
   final String autor;
-  final int estrelas;
+  final double estrelas;
   final String forumName;
 
   Post({
@@ -14,4 +14,26 @@ class Post {
     required this.estrelas,
     required this.forumName,
   });
+
+  factory Post.fromMap(Map<String, dynamic> map) {
+    return Post(
+      id: map['id'],
+      titulo: map['titulo'],
+      descricao: map['descricao'],
+      autor: map['autor'],
+      estrelas: (map['estrelas'] as num).toDouble(),
+      forumName: map['forumName'],
+    );
+  }
+
+  Map<String, dynamic> toMap() {
+    return {
+      'id': id,
+      'titulo': titulo,
+      'descricao': descricao,
+      'autor': autor,
+      'estrelas': estrelas,
+      'forumName': forumName,
+    };
+  }
 }
