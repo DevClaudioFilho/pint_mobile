@@ -1,74 +1,75 @@
+import '../../data/models/post.dart';
 import '../../data/models/forum.dart';
 
-class ForumCategory {
-  final String nome;
-  final String imagem;
-
-  ForumCategory({
-    required this.nome,
-    required this.imagem,
-  });
-}
-
 class ForumService {
-  /// Simula rota da API que devolve lista de fóruns
+  /// Simula busca dos fóruns (categorias)
   Future<List<Forum>> fetchForums() async {
-    await Future.delayed(const Duration(seconds: 1)); // Simula delay da API
+    await Future.delayed(const Duration(seconds: 1));
     return [
-      Forum(
-        id: '1',
-        autor: 'Jose Beselga',
-        titulo: 'Problemas na atualizacao do python',
-        descricao:
-            'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Pellentesque suscipit ipsum quis eros congue, quis consectetur sem suscipit.',
-        estrelas: 3,
-      ),
-      Forum(
-        id: '2',
-        autor: 'Claudio Pinho',
-        titulo: 'Versao 24.04 do ubuntu erros',
-        descricao:
-            'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Pellentesque suscipit ipsum quis eros congue, quis consectetur sem suscipit.',
-        estrelas: 3,
-      ),
-      Forum(
-        id: '3',
-        autor: 'Afonso Rodrigues',
-        titulo: 'Como se faz um ciclo em C',
-        descricao:
-            'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Pellentesque suscipit ipsum quis eros congue, quis consectetur sem suscipit.',
-        estrelas: 1,
-      ),
+      Forum(nome: 'PYTHON', imagem: 'assets/python.png'),
+      Forum(nome: 'C#', imagem: 'assets/csharp.png'),
+      Forum(nome: 'DEVOPS', imagem: 'assets/devops.png'),
     ];
   }
 
-  /// Simula criação de fórum
-  Future<Forum> createForum(String titulo, String descricao, String autor) async {
-    await Future.delayed(const Duration(seconds: 1)); // Simula chamada à API
-    return Forum(
+  /// Simula busca de posts de um fórum específico
+  Future<List<Post>> fetchPostsForForum(String forumName) async {
+    await Future.delayed(const Duration(seconds: 1));
+
+    final allPosts = _mockPosts();
+
+    // Simula filtro pelo nome do fórum
+    return allPosts.where((p) => p.forumName == forumName).toList();
+  }
+
+  /// Simula criação de post
+  Future<Post> createPost(String titulo, String descricao, String autor, String forumName) async {
+    await Future.delayed(const Duration(seconds: 1));
+    return Post(
       id: DateTime.now().millisecondsSinceEpoch.toString(),
       titulo: titulo,
       descricao: descricao,
       autor: autor,
       estrelas: 0,
+      forumName: forumName,
     );
   }
 
-  /// Simula rota de API que devolve categorias dos fóruns
-  Future<List<ForumCategory>> fetchCategories() async {
-    await Future.delayed(const Duration(seconds: 1)); // Simula delay da API
+  Future<Post?> fetchPostById(String id) async {
+    await Future.delayed(const Duration(seconds: 1));
+    final posts = _mockPosts();
+    return posts.firstWhere(
+      (p) => p.id == id,
+    );
+  }
+
+
+  /// Mock de posts com associação ao fórum
+  List<Post> _mockPosts() {
     return [
-      ForumCategory(
-        nome: 'PYTHON',
-        imagem: 'assets/python.png',
+      Post(
+        id: '1',
+        titulo: 'Problemas na atualizacao do python',
+        descricao: 'Descrição do post sobre python.',
+        autor: 'Jose Beselga',
+        estrelas: 3,
+        forumName: 'PYTHON',
       ),
-      ForumCategory(
-        nome: 'C#',
-        imagem: 'assets/csharp.png',
+      Post(
+        id: '2',
+        titulo: 'Como se faz um ciclo em C',
+        descricao: 'Descrição sobre ciclos em C.',
+        autor: 'Afonso Rodrigues',
+        estrelas: 2,
+        forumName: 'C#',
       ),
-      ForumCategory(
-        nome: 'DEVOPS',
-        imagem: 'assets/devops.png',
+      Post(
+        id: '3',
+        titulo: 'Versao 24.04 do ubuntu erros',
+        descricao: 'Descrição sobre erros no Ubuntu.',
+        autor: 'Claudio Pinho',
+        estrelas: 4,
+        forumName: 'DEVOPS',
       ),
     ];
   }

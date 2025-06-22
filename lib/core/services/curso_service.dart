@@ -28,7 +28,7 @@ class CursoService {
     await Future.delayed(const Duration(seconds: 1));
     final curso = _mockCursos().firstWhere(
       (c) => c.id == id,
-      orElse: () => Curso(id: id, titulo: 'Curso não encontrado', categoria: 'Desconhecido', nivel: 'Desconhecido'),
+      orElse: () => Curso(id: id, titulo: 'Curso não encontrado', categoria: 'Desconhecido', nivel: 'Desconhecido', dataLimite: DateTime.now()),
     );
     return curso;
   }
@@ -42,13 +42,32 @@ class CursoService {
   }
 
   /// Cursos mockados
-  List<Curso> _mockCursos() {
-    return [
-      Curso(id: '1', titulo: 'Flutter para Iniciantes', categoria: 'Mobile', nivel: 'Básico'),
-      Curso(id: '2', titulo: 'Dart Avançado', categoria: 'Linguagem', nivel: 'Avançado'),
-      Curso(id: '3', titulo: 'Desenvolvimento Web com Flutter', categoria: 'Web', nivel: 'Intermediário'),
-    ];
-  }
+List<Curso> _mockCursos() {
+  return [
+    Curso(
+      id: '1',
+      titulo: 'Flutter para Iniciantes',
+      categoria: 'Mobile',
+      nivel: 'Básico',
+      dataLimite: DateTime(2024, 12, 31),
+    ),
+    Curso(
+      id: '2',
+      titulo: 'Dart Avançado',
+      categoria: 'Linguagem',
+      nivel: 'Avançado',
+      dataLimite: DateTime(2026, 10, 1),
+    ),
+    Curso(
+      id: '3',
+      titulo: 'Desenvolvimento Web com Flutter',
+      categoria: 'Web',
+      nivel: 'Intermediário',
+      dataLimite: DateTime(2024, 9, 15),
+    ),
+  ];
+}
+
 
   /// Aulas mockadas
   List<Aula> _mockAulas() {

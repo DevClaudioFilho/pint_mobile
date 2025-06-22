@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:flutter_application/core/services/curso_service.dart';
 import 'package:flutter_application/data/models/aula.dart';
 import 'package:flutter_application/data/models/curso.dart';
 
 class CursoPage extends StatefulWidget {
-  const CursoPage({super.key});
+  final String cursoId;
+
+  const CursoPage({super.key, required this.cursoId});
 
   @override
   State<CursoPage> createState() => _CursoPageState();
@@ -16,11 +19,10 @@ class _CursoPageState extends State<CursoPage> {
   late Future<List<Aula>> _aulasFuture;
 
   @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    final cursoId = ModalRoute.of(context)!.settings.arguments as String;
-    _cursoFuture = _cursoService.fetchCursoById(cursoId);
-    _aulasFuture = _cursoService.fetchAulasByCurso(cursoId);
+  void initState() {
+    super.initState();
+    _cursoFuture = _cursoService.fetchCursoById(widget.cursoId);
+    _aulasFuture = _cursoService.fetchAulasByCurso(widget.cursoId);
   }
 
   @override
@@ -35,7 +37,14 @@ class _CursoPageState extends State<CursoPage> {
           if (snapshot.hasError) {
             return const Center(child: Text('Erro ao carregar curso'));
           }
+          if (!snapshot.hasData) {
+            return const Center(child: Text('Curso não encontrado'));
+          }
+
           final curso = snapshot.data!;
+          final dataLimite = curso.dataLimite;
+          final inscricaoAberta = DateTime.now().isBefore(dataLimite);
+
           return Padding(
             padding: const EdgeInsets.all(16),
             child: ListView(
@@ -71,20 +80,43 @@ class _CursoPageState extends State<CursoPage> {
                   'Pellentesque suscipit ipsum quis eros congue, quis consectetur sem suscipit.',
                 ),
                 const SizedBox(height: 16),
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton.icon(
-                    onPressed: () {
-                      // Simular inscrição
-                    },
-                    icon: const Icon(Icons.add),
-                    label: const Text('Inscrever'),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.lightBlue,
-                      foregroundColor: Colors.black,
-                    ),
-                  ),
+                Text(
+                  'Data-limite de inscrição: ${DateFormat('dd/MM/yyyy').format(dataLimite)}',
+                  style: const TextStyle(fontWeight: FontWeight.bold),
                 ),
+                const SizedBox(height: 8),
+                if (inscricaoAberta)
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton.icon(
+                      onPressed: () {
+                        showDialog(
+                          context: context,
+                          builder: (_) => AlertDialog(
+                            title: const Text('Inscrição'),
+                            content: const Text('Inscrição efetuada com sucesso!'),
+                            actions: [
+                              TextButton(
+                                onPressed: () => Navigator.of(context).pop(),
+                                child: const Text('OK'),
+                              ),
+                            ],
+                          ),
+                        );
+                      },
+                      icon: const Icon(Icons.add),
+                      label: const Text('Inscrever'),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.lightBlue,
+                        foregroundColor: Colors.black,
+                      ),
+                    ),
+                  )
+                else
+                  const Text(
+                    'Inscrição esgotada. Você não pode mais se inscrever neste curso.',
+                    style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold),
+                  ),
                 const SizedBox(height: 24),
                 const Text(
                   'Aulas',
@@ -135,13 +167,16 @@ class _CursoPageState extends State<CursoPage> {
                                 );
                               }),
                             ),
-                            onTap: () {
-                              Navigator.pushNamed(
-                                context,
-                                '/aula',
-                                arguments: aula.id,
-                              );
-                            },
+                            enabled: inscricaoAberta,
+                            onTap: inscricaoAberta
+                                ? () {
+                                    Navigator.pushNamed(
+                                      context,
+                                      '/aula',
+                                      arguments: aula.id,
+                                    );
+                                  }
+                                : null,
                           ),
                         );
                       }).toList(),

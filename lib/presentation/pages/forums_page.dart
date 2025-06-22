@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_application/presentation/pages/forum_posts_page.dart';
+import 'package:flutter_application/data/models/forum.dart';
+import 'package:flutter_application/presentation/pages/posts_page.dart';
 import '../../../core/services/forum_service.dart';
 
 class ForumsPage extends StatefulWidget {
@@ -11,19 +12,21 @@ class ForumsPage extends StatefulWidget {
 
 class _ForumsPageState extends State<ForumsPage> {
   final ForumService _forumService = ForumService();
-  late Future<List<ForumCategory>> _categoriesFuture;
+  late Future<List<Forum>> _categoriesFuture;
   String _searchTerm = '';
 
   @override
   void initState() {
     super.initState();
-    _categoriesFuture = _forumService.fetchCategories();
+    _categoriesFuture = _forumService.fetchForums();
   }
 
   void _abrirCategoria(String nome) {
     Navigator.push(
       context,
-      MaterialPageRoute(builder: (_) => ForumPostsPage(categoria: nome)),
+      MaterialPageRoute(
+        builder: (_) => PostsPage(forumName: nome),
+      ),
     );
   }
 
@@ -53,7 +56,7 @@ class _ForumsPageState extends State<ForumsPage> {
             ),
           ),
           const SizedBox(height: 12),
-          FutureBuilder<List<ForumCategory>>(
+          FutureBuilder<List<Forum>>(
             future: _categoriesFuture,
             builder: (context, snapshot) {
               if (snapshot.connectionState == ConnectionState.waiting) {
@@ -65,14 +68,10 @@ class _ForumsPageState extends State<ForumsPage> {
 
               var categories = snapshot.data!;
               if (_searchTerm.isNotEmpty) {
-                categories =
-                    categories
-                        .where(
-                          (c) => c.nome.toLowerCase().contains(
-                            _searchTerm.toLowerCase(),
-                          ),
-                        )
-                        .toList();
+                categories = categories
+                    .where((c) =>
+                        c.nome.toLowerCase().contains(_searchTerm.toLowerCase()))
+                    .toList();
               }
 
               if (categories.isEmpty) {
@@ -82,36 +81,35 @@ class _ForumsPageState extends State<ForumsPage> {
               }
 
               return Column(
-                children:
-                    categories.map((c) {
-                      return Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            c.nome,
-                            style: const TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 16,
-                            ),
+                children: categories.map((c) {
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        c.nome,
+                        style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      GestureDetector(
+                        onTap: () => _abrirCategoria(c.nome),
+                        child: Card(
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
                           ),
-                          const SizedBox(height: 4),
-                          GestureDetector(
-                            onTap: () => _abrirCategoria(c.nome),
-                            child: Card(
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              clipBehavior: Clip.antiAlias,
-                              child: AspectRatio(
-                                aspectRatio: 16 / 9,
-                                child: Image.asset(c.imagem, fit: BoxFit.cover),
-                              ),
-                            ),
+                          clipBehavior: Clip.antiAlias,
+                          child: AspectRatio(
+                            aspectRatio: 16 / 9,
+                            child: Image.asset(c.imagem, fit: BoxFit.cover),
                           ),
-                          const SizedBox(height: 16),
-                        ],
-                      );
-                    }).toList(),
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                    ],
+                  );
+                }).toList(),
               );
             },
           ),

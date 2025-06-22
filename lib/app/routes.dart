@@ -6,8 +6,9 @@ import 'package:flutter_application/presentation/pages/curso_page.dart';
 import 'package:flutter_application/presentation/pages/cursos_page.dart';
 import 'package:flutter_application/presentation/pages/forums_page.dart';
 import 'package:flutter_application/presentation/pages/login_page.dart';
+import 'package:flutter_application/presentation/pages/post_page.dart';
+import 'package:flutter_application/presentation/pages/posts_page.dart';
 import 'package:flutter_application/presentation/pages/profile_page.dart';
-
 import '../presentation/pages/splash_page.dart';
 
 class AppRoutes {
@@ -17,8 +18,13 @@ class AppRoutes {
 
     '/cursos':
         (context) => const AuthScaffold(child: CursosPage(), title: 'Cursos'),
-    '/cursos/id':
-        (context) => const AuthScaffold(child: CursoPage(), title: 'Curso'),
+
+    '/cursos/id': (context) {
+      final arg = ModalRoute.of(context)!.settings.arguments;
+      final cursoId = arg is String ? arg : arg.toString() ?? '';
+
+      return AuthScaffold(title: 'Curso', child: CursoPage(cursoId: cursoId));
+    },
 
     '/aula': (context) {
       final aulaId = ModalRoute.of(context)!.settings.arguments as String;
@@ -27,11 +33,18 @@ class AppRoutes {
 
     '/forums':
         (context) => const AuthScaffold(child: ForumsPage(), title: 'Forums'),
+    '/post': (context) {
+      final postId = ModalRoute.of(context)!.settings.arguments.toString();
+      return PostPage(postId: postId);
+    },
 
     '/profile':
         (context) => const AuthScaffold(child: ProfilePage(), title: 'Perfil'),
-    
-      '/certificados':
-        (context) => const AuthScaffold(child: CertificacoesPage(), title: 'Certificações'),
+
+    '/certificados':
+        (context) => const AuthScaffold(
+          child: CertificacoesPage(),
+          title: 'Certificações',
+        ),
   };
 }

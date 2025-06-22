@@ -1,15 +1,9 @@
 class Forum {
-  final String id;
-  final String autor;
-  final String titulo;
-  final String descricao;
-  final int estrelas;
+  final String nome;
+  final String imagem;
 
   Forum({
-    required this.id,
-    required this.autor,
-    required this.titulo,
-    required this.descricao,
-    required this.estrelas,
+    required this.nome,
+    required this.imagem,
   });
 }
