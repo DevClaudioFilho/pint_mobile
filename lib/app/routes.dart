@@ -9,12 +9,14 @@ import 'package:flutter_application/presentation/pages/login_page.dart';
 import 'package:flutter_application/presentation/pages/post_page.dart';
 import 'package:flutter_application/presentation/pages/posts_page.dart';
 import 'package:flutter_application/presentation/pages/profile_page.dart';
+import 'package:flutter_application/presentation/pages/solicitar_page.dart';
 import '../presentation/pages/splash_page.dart';
 
 class AppRoutes {
   static final routes = <String, WidgetBuilder>{
     '/': (context) => const SplashPage(),
     '/login': (context) => const LoginPage(),
+    '/solicitar-conta': (context) => const SolicitarContaPage(),
 
     '/cursos':
         (context) => const AuthScaffold(child: CursosPage(), title: 'Cursos'),
