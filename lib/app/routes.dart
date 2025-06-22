@@ -8,8 +8,10 @@ import 'package:flutter_application/presentation/pages/forums_page.dart';
 import 'package:flutter_application/presentation/pages/login_page.dart';
 import 'package:flutter_application/presentation/pages/post_page.dart';
 import 'package:flutter_application/presentation/pages/posts_page.dart';
+import 'package:flutter_application/presentation/pages/primeiro_login_page.dart';
 import 'package:flutter_application/presentation/pages/profile_page.dart';
 import 'package:flutter_application/presentation/pages/solicitar_page.dart';
+import 'package:flutter_application/presentation/pages/trocar_senha_page.dart';
 import '../presentation/pages/splash_page.dart';
 
 class AppRoutes {
@@ -17,6 +19,22 @@ class AppRoutes {
     '/': (context) => const SplashPage(),
     '/login': (context) => const LoginPage(),
     '/solicitar-conta': (context) => const SolicitarContaPage(),
+    '/primeiro-login': (context) {
+      final arg = ModalRoute.of(context)!.settings.arguments;
+      final userId = arg is int ? arg : int.tryParse(arg.toString());
+
+      if (userId == null) {
+        return const Scaffold(
+          body: Center(
+            child: Text('ID de usuário inválido para o primeiro login.'),
+          ),
+        );
+      }
+
+      return PrimeiroLoginPage(userId: userId);
+    },
+
+
 
     '/cursos':
         (context) => const AuthScaffold(child: CursosPage(), title: 'Cursos'),

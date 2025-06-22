@@ -19,14 +19,21 @@ class _LoginPageState extends State<LoginPage> {
     if (_formKey.currentState!.validate()) {
       setState(() => _loading = true);
       try {
-        await context.read<AuthService>().login(
+        final result = await context.read<AuthService>().login(
               _emailController.text.trim(),
               _passwordController.text.trim(),
             );
-        Navigator.pushReplacementNamed(context, '/cursos');
+
+        final primeiroLogin = result['user']['primeiroLogin'] != 1;
+
+        if (primeiroLogin) {
+          Navigator.pushReplacementNamed(context, '/trocar-senha', arguments: result['user']);
+        } else {
+          Navigator.pushReplacementNamed(context, '/cursos');
+        }
       } catch (e) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Email ou senha inválidos')),
+          SnackBar(content: Text(e.toString())),
         );
       } finally {
         setState(() => _loading = false);
@@ -51,6 +58,7 @@ class _LoginPageState extends State<LoginPage> {
             'assets/bg_login.jpg',
             fit: BoxFit.cover,
           ),
+          Container(color: Colors.black.withOpacity(0.5)),
           Padding(
             padding: const EdgeInsets.all(24),
             child: Center(
@@ -114,7 +122,7 @@ class _LoginPageState extends State<LoginPage> {
                         decoration: _inputDecoration('Senha'),
                         validator: (value) {
                           if (value == null || value.isEmpty) return 'Informe a senha';
-                          if (value.length < 6) return 'Senha muito curta';
+                          if (value.length < 4) return 'Senha muito curta';
                           return null;
                         },
                       ),
