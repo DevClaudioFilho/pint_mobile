@@ -14,9 +14,11 @@ class MyApp extends StatelessWidget {
       child: MaterialApp(
         title: 'Meu App',
         debugShowCheckedModeBanner: false,
-        theme: AppThemes.lightTheme,
-        darkTheme: AppThemes.darkTheme,
-        themeMode: ThemeMode.system,
+        theme: ThemeData(
+            primarySwatch: Colors.blue, // Altere de Colors.purple (ou outro) para Colors.blue
+            colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
+            useMaterial3: true,
+          ),
         routes: AppRoutes.routes,
         initialRoute: '/',
       ),
