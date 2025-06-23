@@ -29,6 +29,18 @@ class DatabaseHelper {
 
   Future<void> _onCreate(Database db, int version) async {
     await db.execute('''
+      CREATE TABLE profiles (
+        id TEXT PRIMARY KEY,
+        nome TEXT,
+        email TEXT UNIQUE,
+        senha TEXT,
+        morada TEXT,
+        codigoPostal TEXT,
+        avatarUrl TEXT
+      );
+    ''');
+
+    await db.execute('''
       CREATE TABLE cursos (
         id TEXT PRIMARY KEY,
         titulo TEXT,
@@ -48,17 +60,33 @@ class DatabaseHelper {
         videoUrl TEXT,
         professor TEXT,
         avaliacao REAL,
-        thumbnail TEXT
+        thumbnail TEXT,
+        FOREIGN KEY (cursoId) REFERENCES cursos(id) ON DELETE CASCADE
       );
     ''');
 
     await db.execute('''
       CREATE TABLE certificacoes (
         id TEXT PRIMARY KEY,
+        cursoId TEXT,
         titulo TEXT,
+        profileId TEXT,
         progresso REAL,
         dataInicio TEXT,
-        dataFim TEXT
+        dataFim TEXT,
+        FOREIGN KEY (cursoId) REFERENCES cursos(id) ON DELETE CASCADE,
+        FOREIGN KEY (profileId) REFERENCES profiles(id) ON DELETE CASCADE
+      );
+    ''');
+
+    await db.execute('''
+      CREATE TABLE inscricoes (
+        id TEXT PRIMARY KEY,
+        cursoId TEXT,
+        profileId TEXT,
+        dataInscricao TEXT,
+        FOREIGN KEY (cursoId) REFERENCES cursos(id) ON DELETE CASCADE,
+        FOREIGN KEY (profileId) REFERENCES profiles(id) ON DELETE CASCADE
       );
     ''');
 
@@ -73,23 +101,36 @@ class DatabaseHelper {
     await db.execute('''
       CREATE TABLE posts (
         id TEXT PRIMARY KEY,
+        forumId TEXT,
         titulo TEXT,
         descricao TEXT,
         autor TEXT,
         estrelas REAL,
-        forumName TEXT
+        FOREIGN KEY (forumId) REFERENCES forums(id) ON DELETE CASCADE
       );
     ''');
 
     await db.execute('''
-      CREATE TABLE profiles (
+      CREATE TABLE comentarios (
         id TEXT PRIMARY KEY,
-        nome TEXT,
-        email TEXT,
-        senha TEXT,
-        morada TEXT,
-        codigoPostal TEXT,
-        avatarUrl TEXT
+        postId TEXT,
+        profileId TEXT,
+        texto TEXT,
+        link TEXT,
+        FOREIGN KEY (postId) REFERENCES posts(id) ON DELETE CASCADE,
+        FOREIGN KEY (profileId) REFERENCES profiles(id) ON DELETE CASCADE
+      );
+    ''');
+
+    await db.execute('''
+      CREATE TABLE reacoes (
+        id TEXT PRIMARY KEY,
+        postId TEXT,
+        comentarioId TEXT,
+        tipo TEXT,
+        usuario TEXT,
+        FOREIGN KEY (postId) REFERENCES posts(id) ON DELETE CASCADE,
+        FOREIGN KEY (comentarioId) REFERENCES comentarios(id) ON DELETE CASCADE
       );
     ''');
 

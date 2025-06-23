@@ -21,11 +21,11 @@ class _ForumsPageState extends State<ForumsPage> {
     _categoriesFuture = _forumService.fetchForums();
   }
 
-  void _abrirCategoria(String nome) {
+  void _abrirCategoria(String id,String title) {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (_) => PostsPage(forumName: nome),
+        builder: (_) => PostsPage(forumId: id,title: title,),
       ),
     );
   }
@@ -94,7 +94,7 @@ class _ForumsPageState extends State<ForumsPage> {
                       ),
                       const SizedBox(height: 4),
                       GestureDetector(
-                        onTap: () => _abrirCategoria(c.nome),
+                        onTap: () => _abrirCategoria(c.id,c.nome),
                         child: Card(
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(12),

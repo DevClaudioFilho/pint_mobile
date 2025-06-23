@@ -14,36 +14,53 @@ class PostPage extends StatefulWidget {
 class _PostPageState extends State<PostPage> {
   final _forumService = ForumService();
   late Future<Post> _postFuture;
+  late Future<List<Map<String, dynamic>>> _commentsFuture;
   final _commentController = TextEditingController();
   final _linkController = TextEditingController();
-
-  final List<Map<String, dynamic>> _comments = [];
+  final Set<String> _comentariosDenunciados = {};
+  final Set<String> _comentariosCurtidos = {};
 
   @override
   void initState() {
     super.initState();
-    _postFuture = _forumService.fetchPostById(widget.postId).then((p) => p ??
-        Post(
-          id: widget.postId,
-          titulo: 'Post não encontrado',
-          descricao: 'Nenhuma descrição disponível.',
-          autor: 'Desconhecido',
-          estrelas: 0,
-          forumName: '',
-        ));
+    _postFuture = _forumService
+        .fetchPostById(widget.postId)
+        .then(
+          (p) =>
+              p ??
+              Post(
+                id: widget.postId,
+                titulo: 'Post não encontrado',
+                descricao: 'Nenhuma descrição disponível.',
+                autor: 'Desconhecido',
+                estrelas: 0,
+                forumId: '',
+              ),
+        );
+
+    _refreshComments();
+    _carregarReacoes();
   }
 
-  void _addComment() {
-    if (_commentController.text.trim().isNotEmpty) {
-      setState(() {
-        _comments.add({
-          'autor': 'Você',
-          'texto': _commentController.text.trim(),
-          'link': _linkController.text.trim(),
-        });
-        _commentController.clear();
-        _linkController.clear();
-      });
+  void _refreshComments() {
+    setState(() {
+      _commentsFuture = _forumService.fetchComentarios(widget.postId);
+    });
+  }
+
+  Future<void> _addComment() async {
+    final texto = _commentController.text.trim();
+    final link = _linkController.text.trim();
+    if (texto.isNotEmpty) {
+      await _forumService.addComentario(
+        widget.postId,
+        '1', // 🔑 Exemplo: ID do usuário logado (pode ajustar)
+        texto,
+        link,
+      );
+      _commentController.clear();
+      _linkController.clear();
+      _refreshComments();
     }
   }
 
@@ -51,7 +68,9 @@ class _PostPageState extends State<PostPage> {
     showDialog(
       context: context,
       builder: (context) {
-        final linkFieldController = TextEditingController(text: _linkController.text);
+        final linkFieldController = TextEditingController(
+          text: _linkController.text,
+        );
         return AlertDialog(
           title: const Text('Adicionar link/anexo'),
           content: TextField(
@@ -78,6 +97,66 @@ class _PostPageState extends State<PostPage> {
     );
   }
 
+  Future<void> _carregarReacoes() async {
+    final denuncias = await _forumService.buscarReacoes(
+      widget.postId,
+      'denuncia',
+      '1',
+    );
+    final curtidas = await _forumService.buscarReacoes(
+      widget.postId,
+      'curtir',
+      '1',
+    );
+    setState(() {
+      _comentariosDenunciados.addAll(denuncias);
+      _comentariosCurtidos.addAll(curtidas);
+    });
+  }
+
+  Future<void> _registrarReacao(String tipo, String comentarioId) async {
+    bool isRemover = false;
+    if (tipo == 'denuncia') {
+      if (_comentariosDenunciados.contains(comentarioId)) {
+        _comentariosDenunciados.remove(comentarioId);
+        isRemover = true;
+      } else {
+        _comentariosDenunciados.add(comentarioId);
+      }
+    } else if (tipo == 'curtir') {
+      if (_comentariosCurtidos.contains(comentarioId)) {
+        _comentariosCurtidos.remove(comentarioId);
+        isRemover = true;
+      } else {
+        _comentariosCurtidos.add(comentarioId);
+      }
+    }
+
+    if (isRemover) {
+      await _forumService.removerReacao(widget.postId, tipo, '1');
+    } else {
+      await _forumService.registrarReacao(
+        widget.postId,
+        comentarioId,
+        tipo,
+        '1',
+      );
+    }
+    _carregarReacoes();
+    setState(() {});
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          isRemover
+              ? (tipo == 'denuncia' ? 'Denúncia removida' : 'Curtida removida')
+              : (tipo == 'denuncia'
+                  ? 'Comentário denunciado'
+                  : 'Comentário curtido'),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -99,7 +178,9 @@ class _PostPageState extends State<PostPage> {
                 Text(
                   post.titulo,
                   style: const TextStyle(
-                      fontSize: 20, fontWeight: FontWeight.bold),
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
                 const SizedBox(height: 8),
                 Row(
@@ -109,8 +190,10 @@ class _PostPageState extends State<PostPage> {
                       backgroundImage: AssetImage('assets/avatar.jpg'),
                     ),
                     const SizedBox(width: 8),
-                    Text(post.autor,
-                        style: const TextStyle(fontWeight: FontWeight.bold)),
+                    Text(
+                      post.autor,
+                      style: const TextStyle(fontWeight: FontWeight.bold),
+                    ),
                   ],
                 ),
                 const SizedBox(height: 8),
@@ -118,8 +201,7 @@ class _PostPageState extends State<PostPage> {
                 const SizedBox(height: 24),
                 const Text(
                   'Comentários',
-                  style: TextStyle(
-                      fontWeight: FontWeight.bold, fontSize: 16),
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
                 ),
                 const SizedBox(height: 8),
                 TextField(
@@ -142,8 +224,9 @@ class _PostPageState extends State<PostPage> {
                     child: Text(
                       'Anexo: ${_linkController.text}',
                       style: const TextStyle(
-                          fontStyle: FontStyle.italic,
-                          color: Colors.blue),
+                        fontStyle: FontStyle.italic,
+                        color: Colors.blue,
+                      ),
                     ),
                   ),
                 Row(
@@ -156,74 +239,108 @@ class _PostPageState extends State<PostPage> {
                   ],
                 ),
                 const SizedBox(height: 16),
-                ..._comments.map((comment) {
-                  return Card(
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    margin: const EdgeInsets.symmetric(vertical: 6),
-                    child: Padding(
-                      padding: const EdgeInsets.all(12),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            children: [
-                              const CircleAvatar(
-                                radius: 12,
-                                backgroundImage:
-                                    AssetImage('assets/avatar.jpg'),
+                FutureBuilder<List<Map<String, dynamic>>>(
+                  future: _commentsFuture,
+                  builder: (context, snapshot) {
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return const Center(child: CircularProgressIndicator());
+                    }
+                    if (snapshot.hasError) {
+                      return const Center(
+                        child: Text('Erro ao carregar comentários'),
+                      );
+                    }
+                    final comments = snapshot.data!;
+                    return Column(
+                      children:
+                          comments.map((comment) {
+                            return Card(
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
                               ),
-                              const SizedBox(width: 8),
-                              Text(comment['autor'],
-                                  style: const TextStyle(
-                                      fontWeight: FontWeight.bold)),
-                              const Spacer(),
-                              IconButton(
-                                icon: const Icon(Icons.flag),
-                                onPressed: () {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    const SnackBar(
-                                        content: Text('Comentário denunciado')),
-                                  );
-                                },
-                                tooltip: 'Denunciar',
-                              ),
-                              IconButton(
-                                icon: const Icon(Icons.arrow_upward),
-                                onPressed: () {},
-                                tooltip: 'Curtir',
-                              ),
-                              IconButton(
-                                icon: const Icon(Icons.arrow_downward),
-                                onPressed: () {},
-                                tooltip: 'Descurtir',
-                              )
-                            ],
-                          ),
-                          const SizedBox(height: 4),
-                          Text(comment['texto']),
-                          if (comment['link'] != null &&
-                              comment['link'].toString().isNotEmpty)
-                            Padding(
-                              padding: const EdgeInsets.only(top: 4),
-                              child: GestureDetector(
-                                onTap: () {
-                                  // abrir link - opcional
-                                },
-                                child: Text(
-                                  comment['link'],
-                                  style: const TextStyle(
-                                      color: Colors.blue,
-                                      decoration: TextDecoration.underline),
+                              margin: const EdgeInsets.symmetric(vertical: 6),
+                              child: Padding(
+                                padding: const EdgeInsets.all(12),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Row(
+                                      children: [
+                                        const CircleAvatar(
+                                          radius: 12,
+                                          backgroundImage: AssetImage(
+                                            'assets/avatar.jpg',
+                                          ),
+                                        ),
+                                        const SizedBox(width: 8),
+                                        Text(
+                                          comment['autor'] ?? 'Desconhecido',
+                                          style: const TextStyle(
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                        const Spacer(),
+                                        IconButton(
+                                          icon: Icon(
+                                            Icons.flag,
+                                            color:
+                                                _comentariosDenunciados
+                                                        .contains(comment['id'])
+                                                    ? Colors.red
+                                                    : Colors.grey,
+                                          ),
+                                          onPressed:
+                                              () => _registrarReacao(
+                                                'denuncia',
+                                                comment['id'],
+                                              ),
+                                          tooltip: 'Denunciar',
+                                        ),
+                                        IconButton(
+                                          icon: Icon(
+                                            Icons.arrow_upward,
+                                            color:
+                                                _comentariosCurtidos.contains(
+                                                      comment['id'],
+                                                    )
+                                                    ? Colors.green
+                                                    : Colors.grey,
+                                          ),
+                                          onPressed:
+                                              () => _registrarReacao(
+                                                'curtir',
+                                                comment['id'],
+                                              ),
+                                          tooltip: 'Curtir',
+                                        ),
+                                      ],
+                                    ),
+                                    const SizedBox(height: 4),
+                                    Text(comment['texto']),
+                                    if (comment['link'] != null &&
+                                        comment['link'].toString().isNotEmpty)
+                                      Padding(
+                                        padding: const EdgeInsets.only(top: 4),
+                                        child: GestureDetector(
+                                          onTap: () {},
+                                          child: Text(
+                                            comment['link'],
+                                            style: const TextStyle(
+                                              color: Colors.blue,
+                                              decoration:
+                                                  TextDecoration.underline,
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                  ],
                                 ),
                               ),
-                            ),
-                        ],
-                      ),
-                    ),
-                  );
-                }).toList(),
+                            );
+                          }).toList(),
+                    );
+                  },
+                ),
               ],
             ),
           );

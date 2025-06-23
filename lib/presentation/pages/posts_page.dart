@@ -3,9 +3,10 @@ import 'package:flutter_application/core/services/forum_service.dart';
 import 'package:flutter_application/data/models/post.dart';
 
 class PostsPage extends StatefulWidget {
-  final String forumName;
+  final String forumId;
+  final String title;      // adicionar is
 
-  const PostsPage({super.key, required this.forumName});
+  const PostsPage({super.key, required this.forumId, required this.title});
 
   @override
   State<PostsPage> createState() => _PostsPageState();
@@ -19,7 +20,7 @@ class _PostsPageState extends State<PostsPage> {
   @override
   void initState() {
     super.initState();
-    _postsFuture = _forumService.fetchPostsForForum(widget.forumName);
+    _postsFuture = _forumService.fetchPostsForForum(widget.forumId);
   }
 
   void _openCreatePostDialog() async {
@@ -65,7 +66,7 @@ class _PostsPageState extends State<PostsPage> {
                     titleController.text,
                     descriptionController.text,
                     authorController.text,
-                    widget.forumName,
+                    widget.forumId,
                   );
                   Navigator.of(context).pop(newPost);
                 }
@@ -79,7 +80,7 @@ class _PostsPageState extends State<PostsPage> {
 
     if (result != null) {
       setState(() {
-        _postsFuture = _forumService.fetchPostsForForum(widget.forumName);
+        _postsFuture = _forumService.fetchPostsForForum(widget.forumId);
       });
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Post criado com sucesso!')),
@@ -91,7 +92,7 @@ class _PostsPageState extends State<PostsPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Posts - ${widget.forumName}'),
+        title: Text('${widget.title}'),
         actions: [
           IconButton(
             icon: const Icon(Icons.add),
