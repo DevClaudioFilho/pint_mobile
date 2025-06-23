@@ -80,17 +80,6 @@ class DatabaseHelper {
     ''');
 
     await db.execute('''
-      CREATE TABLE inscricoes (
-        id TEXT PRIMARY KEY,
-        cursoId TEXT,
-        profileId TEXT,
-        dataInscricao TEXT,
-        FOREIGN KEY (cursoId) REFERENCES cursos(id) ON DELETE CASCADE,
-        FOREIGN KEY (profileId) REFERENCES profiles(id) ON DELETE CASCADE
-      );
-    ''');
-
-    await db.execute('''
       CREATE TABLE forums (
         id TEXT PRIMARY KEY,
         nome TEXT,
@@ -131,6 +120,29 @@ class DatabaseHelper {
         usuario TEXT,
         FOREIGN KEY (postId) REFERENCES posts(id) ON DELETE CASCADE,
         FOREIGN KEY (comentarioId) REFERENCES comentarios(id) ON DELETE CASCADE
+      );
+    ''');
+
+    await db.execute('''
+      CREATE TABLE inscricoes (
+        id TEXT PRIMARY KEY,
+        cursoId TEXT,
+        profileId TEXT,
+        dataInscricao TEXT,
+        FOREIGN KEY (cursoId) REFERENCES cursos(id) ON DELETE CASCADE,
+        FOREIGN KEY (profileId) REFERENCES profiles(id) ON DELETE CASCADE
+      );
+    ''');
+
+    await db.execute('''
+      CREATE TABLE comentarios_aula (
+        id TEXT PRIMARY KEY,
+        aulaId TEXT,
+        profileId TEXT,
+        texto TEXT,
+        link TEXT,
+        FOREIGN KEY (aulaId) REFERENCES aulas(id) ON DELETE CASCADE,
+        FOREIGN KEY (profileId) REFERENCES profiles(id) ON DELETE CASCADE
       );
     ''');
 

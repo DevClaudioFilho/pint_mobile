@@ -45,20 +45,62 @@ class CursoService {
 
   Future<void> insertCurso(Curso curso) async {
     final db = await DatabaseHelper().db;
-    await db.insert('cursos', curso.toMap(), conflictAlgorithm: ConflictAlgorithm.replace);
+    await db.insert(
+      'cursos',
+      curso.toMap(),
+      conflictAlgorithm: ConflictAlgorithm.replace,
+    );
   }
 
-    Future<Curso> fetchCursoById(String id) async {
+  Future<Curso> fetchCursoById(String id) async {
     await Future.delayed(const Duration(seconds: 1));
     final db = await DatabaseHelper().db;
-    final result = await db.query('cursos', where: 'id = ?', whereArgs: [id], limit: 1);
+    final result = await db.query(
+      'cursos',
+      where: 'id = ?',
+      whereArgs: [id],
+      limit: 1,
+    );
     return Curso.fromMap(result.first);
   }
 
   Future<List<Aula>> fetchAulasByCurso(String cursoId) async {
     await Future.delayed(const Duration(seconds: 1));
     final db = await DatabaseHelper().db;
-    final result = await db.query('aulas', where: 'cursoId = ?', whereArgs: [cursoId]);
+    final result = await db.query(
+      'aulas',
+      where: 'cursoId = ?',
+      whereArgs: [cursoId],
+    );
     return result.map((e) => Aula.fromMap(e)).toList();
+  }
+
+  Future<void> inscreverEmCurso(String cursoId, String profileId) async {
+    final db = await DatabaseHelper().db;
+    await db.insert('inscricoes', {
+      'id': DateTime.now().millisecondsSinceEpoch.toString(),
+      'cursoId': cursoId,
+      'profileId': profileId,
+      'dataInscricao': DateTime.now().toIso8601String(),
+    }, conflictAlgorithm: ConflictAlgorithm.replace);
+  }
+
+  Future<void> desinscreverDoCurso(String cursoId, String profileId) async {
+    final db = await DatabaseHelper().db;
+    await db.delete(
+      'inscricoes',
+      where: 'cursoId = ? AND profileId = ?',
+      whereArgs: [cursoId, profileId],
+    );
+  }
+
+  Future<bool> verificarInscricao(String cursoId, String profileId) async {
+    final db = await DatabaseHelper().db;
+    final result = await db.query(
+      'inscricoes',
+      where: 'cursoId = ? AND profileId = ?',
+      whereArgs: [cursoId, profileId],
+    );
+    return result.isNotEmpty;
   }
 }

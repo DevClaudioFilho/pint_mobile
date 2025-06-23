@@ -17,12 +17,44 @@ class _CursoPageState extends State<CursoPage> {
   final _cursoService = CursoService();
   late Future<Curso> _cursoFuture;
   late Future<List<Aula>> _aulasFuture;
+  bool _inscrito = false;
+  bool _inscricaoAberta = false;
 
   @override
   void initState() {
     super.initState();
     _cursoFuture = _cursoService.fetchCursoById(widget.cursoId);
     _aulasFuture = _cursoService.fetchAulasByCurso(widget.cursoId);
+    _verificarInscricao();
+  }
+
+  Future<void> _verificarInscricao() async {
+    final inscrito = await _cursoService.verificarInscricao(
+      widget.cursoId,
+      '1', // Exemplo: profileId fixo, substitua pelo real
+    );
+    final curso = await _cursoService.fetchCursoById(widget.cursoId);
+    final aberta = DateTime.now().isBefore(curso.dataLimite);
+    setState(() {
+      _inscrito = inscrito;
+      _inscricaoAberta = aberta;
+    });
+  }
+
+  Future<void> _alternarInscricao() async {
+    if (_inscrito) {
+      await _cursoService.desinscreverDoCurso(widget.cursoId, '1');
+    } else {
+      await _cursoService.inscreverEmCurso(widget.cursoId, '1');
+    }
+    await _verificarInscricao();
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          _inscrito ? 'Inscrição cancelada' : 'Inscrição realizada',
+        ),
+      ),
+    );
   }
 
   @override
@@ -42,16 +74,16 @@ class _CursoPageState extends State<CursoPage> {
           }
 
           final curso = snapshot.data!;
-          final dataLimite = curso.dataLimite;
-          final inscricaoAberta = DateTime.now().isBefore(dataLimite);
-
           return Padding(
             padding: const EdgeInsets.all(16),
             child: ListView(
               children: [
                 Text(
                   curso.titulo,
-                  style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                  style: const TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
                 Row(
                   children: [
@@ -59,7 +91,11 @@ class _CursoPageState extends State<CursoPage> {
                     const SizedBox(width: 4),
                     Row(
                       children: List.generate(5, (index) {
-                        return const Icon(Icons.star, size: 16, color: Colors.amber);
+                        return const Icon(
+                          Icons.star,
+                          size: 16,
+                          color: Colors.amber,
+                        );
                       }),
                     ),
                     const Spacer(),
@@ -81,41 +117,31 @@ class _CursoPageState extends State<CursoPage> {
                 ),
                 const SizedBox(height: 16),
                 Text(
-                  'Data-limite de inscrição: ${DateFormat('dd/MM/yyyy').format(dataLimite)}',
+                  'Data-limite de inscrição: ${DateFormat('dd/MM/yyyy').format(curso.dataLimite)}',
                   style: const TextStyle(fontWeight: FontWeight.bold),
                 ),
                 const SizedBox(height: 8),
-                if (inscricaoAberta)
+                if (_inscricaoAberta)
                   SizedBox(
                     width: double.infinity,
                     child: ElevatedButton.icon(
-                      onPressed: () {
-                        showDialog(
-                          context: context,
-                          builder: (_) => AlertDialog(
-                            title: const Text('Inscrição'),
-                            content: const Text('Inscrição efetuada com sucesso!'),
-                            actions: [
-                              TextButton(
-                                onPressed: () => Navigator.of(context).pop(),
-                                child: const Text('OK'),
-                              ),
-                            ],
-                          ),
-                        );
-                      },
-                      icon: const Icon(Icons.add),
-                      label: const Text('Inscrever'),
+                      onPressed: _alternarInscricao,
+                      icon: Icon(_inscrito ? Icons.check : Icons.add),
+                      label: Text(_inscrito ? 'Inscrito' : 'Inscrever-se'),
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.lightBlue,
-                        foregroundColor: Colors.black,
+                        backgroundColor:
+                            _inscrito ? Colors.green : Colors.lightBlue,
+                        foregroundColor: Colors.white,
                       ),
                     ),
                   )
                 else
                   const Text(
                     'Inscrição esgotada. Você não pode mais se inscrever neste curso.',
-                    style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold),
+                    style: TextStyle(
+                      color: Colors.red,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                 const SizedBox(height: 24),
                 const Text(
@@ -167,8 +193,8 @@ class _CursoPageState extends State<CursoPage> {
                                 );
                               }),
                             ),
-                            enabled: inscricaoAberta,
-                            onTap: inscricaoAberta
+                            enabled: _inscrito,
+                            onTap: _inscrito
                                 ? () {
                                     Navigator.pushNamed(
                                       context,
