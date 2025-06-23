@@ -20,57 +20,35 @@ Future<void> populate(Database db) async {
     'codigoPostal': '7654-321',
     'avatarUrl': 'https://via.placeholder.com/100',
   });
-  await db.insert('profiles', {
-    'id': '3',
-    'nome': 'Carlos Mendes',
-    'email': 'carlos@exemplo.com',
-    'senha': 'senha123',
-    'morada': 'Rua Nova',
-    'codigoPostal': '2345-678',
-    'avatarUrl': 'https://via.placeholder.com/100',
-  });
 
   // FORUNS
   await db.insert('forums', {
     'id': '1',
     'nome': 'Dúvidas Gerais',
-    'imagem': 'assets/images/forum1.png',
+    'imagem': 'assets/banner.jpg',
   });
   await db.insert('forums', {
     'id': '2',
     'nome': 'Sugestões',
-    'imagem': 'assets/images/forum2.png',
-  });
-  await db.insert('forums', {
-    'id': '3',
-    'nome': 'Anúncios',
-    'imagem': 'assets/images/forum3.png',
+    'imagem': 'assets/banner.jpg',
   });
 
   // POSTS
   await db.insert('posts', {
     'id': '101',
-    'titulo': 'Como usar o Provider?',
-    'descricao': 'Estou com dificuldade para gerenciar estado usando Provider.',
+    'forumId': '1',
+    'titulo': 'Problema com Provider',
+    'descricao': 'Não consigo gerenciar estado no meu app.',
     'autor': 'João',
     'estrelas': 4.0,
-    'forumId': '1',
   });
   await db.insert('posts', {
     'id': '102',
-    'titulo': 'Flutter com Firebase',
-    'descricao': 'Seria interessante ter um curso aprofundado de Firebase + Flutter.',
+    'forumId': '2',
+    'titulo': 'Ideia para novo recurso',
+    'descricao': 'Que tal integrar com API externa?',
     'autor': 'Maria',
     'estrelas': 5.0,
-    'forumId': '2',
-  });
-  await db.insert('posts', {
-    'id': '103',
-    'titulo': 'Nova versão do app disponível',
-    'descricao': 'Lançamos uma nova versão com melhorias.',
-    'autor': 'Carlos',
-    'estrelas': 5.0,
-    'forumId': '3',
   });
 
   // COMENTARIOS
@@ -78,28 +56,21 @@ Future<void> populate(Database db) async {
     'id': '1001',
     'postId': '101',
     'profileId': '2',
-    'texto': 'Ótima explicação!',
+    'texto': 'Já tentou usar Riverpod?',
     'link': '',
   });
   await db.insert('comentarios', {
     'id': '1002',
-    'postId': '101',
-    'profileId': '3',
-    'texto': 'Obrigado pela dica!',
-    'link': 'https://flutter.dev',
-  });
-  await db.insert('comentarios', {
-    'id': '1003',
     'postId': '102',
     'profileId': '1',
-    'texto': 'Muito bom!',
-    'link': '',
+    'texto': 'Boa ideia, podemos planejar!',
+    'link': 'https://flutter.dev',
   });
 
   // CURSOS
   await db.insert('cursos', {
     'id': '201',
-    'titulo': 'Curso de Flutter',
+    'titulo': 'Curso Flutter',
     'categoria': 'Mobile',
     'nivel': 'Intermediário',
     'estrelas': 4.5,
@@ -107,27 +78,19 @@ Future<void> populate(Database db) async {
   });
   await db.insert('cursos', {
     'id': '202',
-    'titulo': 'Curso de Dart',
+    'titulo': 'Curso Dart',
     'categoria': 'Linguagem',
     'nivel': 'Básico',
     'estrelas': 4.0,
     'dataLimite': DateTime.now().add(const Duration(days: 5)).toIso8601String(),
-  });
-  await db.insert('cursos', {
-    'id': '203',
-    'titulo': 'Curso de Firebase',
-    'categoria': 'Backend',
-    'nivel': 'Avançado',
-    'estrelas': 4.8,
-    'dataLimite': DateTime.now().add(const Duration(days: 15)).toIso8601String(),
   });
 
   // AULAS
   await db.insert('aulas', {
     'id': '301',
     'cursoId': '201',
-    'titulo': 'Introdução ao Flutter',
-    'descricao': 'Aula inicial sobre o Flutter.',
+    'titulo': 'Primeiros passos no Flutter',
+    'descricao': 'Introdução ao framework.',
     'videoUrl': 'https://www.youtube.com/watch?v=fq4N0hgOWzU',
     'professor': 'Carlos Silva',
     'avaliacao': 4.5,
@@ -136,44 +99,54 @@ Future<void> populate(Database db) async {
   await db.insert('aulas', {
     'id': '302',
     'cursoId': '202',
-    'titulo': 'Sintaxe do Dart',
-    'descricao': 'Aula sobre a sintaxe básica do Dart.',
+    'titulo': 'Sintaxe básica do Dart',
+    'descricao': 'Visão geral da linguagem.',
     'videoUrl': 'https://www.youtube.com/watch?v=AqCMFXEmf3w',
     'professor': 'Ana Pereira',
     'avaliacao': 4.0,
     'thumbnail': 'https://img.youtube.com/vi/AqCMFXEmf3w/0.jpg',
   });
-  await db.insert('aulas', {
-    'id': '303',
-    'cursoId': '203',
-    'titulo': 'Configuração do Firebase',
-    'descricao': 'Primeiros passos com Firebase.',
-    'videoUrl': 'https://www.youtube.com/watch?v=9kRgVxULbag',
-    'professor': 'Bruno Lima',
-    'avaliacao': 4.8,
-    'thumbnail': 'https://img.youtube.com/vi/9kRgVxULbag/0.jpg',
+
+  // INSCRIÇÕES
+  await db.insert('inscricoes', {
+    'id': '401',
+    'cursoId': '201',
+    'profileId': '1',
+    'dataInscricao': DateTime.now().toIso8601String(),
+  });
+  await db.insert('inscricoes', {
+    'id': '402',
+    'cursoId': '202',
+    'profileId': '1',
+    'dataInscricao': DateTime.now().subtract(const Duration(days: 2)).toIso8601String(),
   });
 
   // CERTIFICACOES
   await db.insert('certificacoes', {
-    'id': '401',
+    'id': '501',
+    'cursoId': '201',
     'titulo': 'Certificação Flutter',
+    'profileId': '1',
     'progresso': 0.0,
     'dataInicio': null,
     'dataFim': null,
   });
   await db.insert('certificacoes', {
-    'id': '402',
+    'id': '502',
+    'cursoId': '202',
     'titulo': 'Certificação Dart',
+    'profileId': '1',
     'progresso': 50.0,
-    'dataInicio': '2024-06-01',
+    'dataInicio': DateTime.now().subtract(const Duration(days: 3)).toIso8601String(),
     'dataFim': null,
   });
   await db.insert('certificacoes', {
-    'id': '403',
-    'titulo': 'Certificação Firebase',
+    'id': '503',
+    'cursoId': '202',
+    'titulo': 'Certificação Dart Finalizada',
+    'profileId': '1',
     'progresso': 100.0,
-    'dataInicio': '2024-05-01',
-    'dataFim': '2024-06-01',
+    'dataInicio': DateTime.now().subtract(const Duration(days: 10)).toIso8601String(),
+    'dataFim': DateTime.now().subtract(const Duration(days: 1)).toIso8601String(),
   });
 }

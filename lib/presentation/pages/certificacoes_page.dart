@@ -22,6 +22,7 @@ class _CertificacoesPageState extends State<CertificacoesPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(title: const Text('Minhas Certificações')),
       body: FutureBuilder<List<Certificacao>>(
         future: _certificacoesFuture,
         builder: (context, snapshot) {
@@ -29,14 +30,17 @@ class _CertificacoesPageState extends State<CertificacoesPage> {
             return const Center(child: CircularProgressIndicator());
           }
 
-          if (snapshot.hasError) {
+          if (snapshot.hasError || !snapshot.hasData) {
             return const Center(child: Text('Erro ao carregar certificações'));
           }
 
           final certificacoes = snapshot.data!;
-          final naoIniciados = certificacoes.where((c) => c.progresso == 0).toList();
-          final emAndamento = certificacoes.where((c) => c.progresso > 0 && c.progresso < 100).toList();
-          final finalizados = certificacoes.where((c) => c.progresso == 100).toList();
+          final naoIniciados =
+              certificacoes.where((c) => c.progresso == 0).toList();
+          final emAndamento =
+              certificacoes.where((c) => c.progresso > 0 && c.progresso < 100).toList();
+          final finalizados =
+              certificacoes.where((c) => c.progresso == 100).toList();
 
           return ListView(
             padding: const EdgeInsets.all(16),
@@ -54,7 +58,9 @@ class _CertificacoesPageState extends State<CertificacoesPage> {
   }
 
   Widget _buildSection(String title, List<Certificacao> list) {
-    if (list.isEmpty) return const SizedBox.shrink();
+    if (list.isEmpty) {
+      return const SizedBox.shrink();
+    }
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -64,7 +70,7 @@ class _CertificacoesPageState extends State<CertificacoesPage> {
           style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
         ),
         const SizedBox(height: 8),
-        ...list.map(_buildCard),
+        ...list.map(_buildCard).toList(),
       ],
     );
   }
@@ -78,8 +84,10 @@ class _CertificacoesPageState extends State<CertificacoesPage> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text('Progresso: ${c.progresso.toStringAsFixed(1)}%'),
-            if (c.dataInicio != null) Text('Início: ${c.dataInicio}'),
-            if (c.dataFim != null) Text('Fim: ${c.dataFim}'),
+            if (c.dataInicio != null)
+              Text('Início: ${c.dataInicio}'),
+            if (c.dataFim != null)
+              Text('Fim: ${c.dataFim}'),
           ],
         ),
         trailing: Icon(
@@ -95,11 +103,17 @@ class _CertificacoesPageState extends State<CertificacoesPage> {
                   : Colors.grey,
         ),
         onTap: () {
-          Navigator.pushNamed(
-            context,
-            '/cursos/id',
-            arguments: c.id,
-          );
+          if (c.cursoId.isNotEmpty) {
+            Navigator.pushNamed(
+              context,
+              '/cursos/id',
+              arguments: c.cursoId,
+            );
+          } else {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('Curso não vinculado')),
+            );
+          }
         },
       ),
     );
